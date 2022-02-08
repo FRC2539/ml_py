@@ -114,10 +114,15 @@ class Tester:
         ntinst.startClientTeam(config_parser.team)
         ntinst.startDSClient()
         self.entry = ntinst.getTable("ML").getEntry("detections")
+        self.entry_targetX = ntinst.getTable("ML").getEntry("targetX")
+        self.entry_targetY = ntinst.getTable("ML").getEntry("targetY")
+        self.entry_targetArea = ntinst.getTable("ML").getEntry("targetArea")
 
         self.coral_entry = ntinst.getTable("ML").getEntry("coral")
         self.fps_entry = ntinst.getTable("ML").getEntry("fps")
-        self.resolution_entry = ntinst.getTable("ML").getEntry("resolution")
+        #self.resolution_entry = ntinst.getTable("ML").getEntry("resolution")
+        self.resolution_entryX = ntinst.getTable("ML").getEntry("resolutionX")
+        self.resolution_entryY = ntinst.getTable("ML").getEntry("resolutionY")
         self.temp_entry = []
 
         print("Starting camera server")
@@ -132,7 +137,9 @@ class Tester:
         self.frames = 0
 
         self.coral_entry.setString(self.hardware_type)
-        self.resolution_entry.setString(str(WIDTH) + ", " + str(HEIGHT))
+        #self.resolution_entry.setString(str(WIDTH) + ", " + str(HEIGHT))
+        self.resolution_entryX.setNumber(WIDTH)
+        self.resolution_entryY.setNumber(HEIGHT)
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -207,7 +214,7 @@ class Tester:
                         continue
 
                     red = [20, 20, 150]
-                    redtolerance = [30, 30, 30]
+                    redtolerance = [50, 50, 50]
                     blue = [120, 80, 40]
                     bluetolerance = [30, 30, 30]
 
@@ -235,6 +242,10 @@ class Tester:
             cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)
             self.entry.setString(json.dumps(self.temp_entry))
+            
+            #print("y: "+json.dumps(self.temp_entry[0].box.ymin))
+            
+            
             self.temp_entry = []
             if self.frames % 100 == 0:
                 print("Completed", self.frames, "frames. FPS:", (1 / (time() - start)))
@@ -264,7 +275,18 @@ class Tester:
         ymin, xmin, ymax, xmax = int(bbox.ymin), int(bbox.xmin), int(bbox.ymax), int(bbox.xmax)
         self.temp_entry.append({"label": object_name, "box": {"ymin": ymin, "xmin": xmin, "ymax": ymax, "xmax": xmax},
                                 "confidence": score})
-        print("entry: "+str(self.temp_entry))
+        #print("entry: "+str(self.temp_entry))
+
+        theX = ((xmax-xmin)/2)+xmin
+        theY = ((ymax-ymin)/2)+ymin
+        theArea = (((xmax-xmin)*(ymax-ymin)))
+
+        self.entry_targetX.setNumber(theX)
+        self.entry_targetY.setNumber(theY)
+        self.entry_targetArea.setNumber(theArea)
+        print("x: "+str(theX)+" y: "+str(theY)+ " width: " + str(xmax-xmin) + " length: " + str(ymax-ymin) + " area:"+str(theArea))
+
+
 
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 4)
 

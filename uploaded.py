@@ -11,6 +11,8 @@ import collections
 import json
 import sys
 
+def sortFunc(e):
+    return e['area']
 
 class ConfigParser:
     def __init__(self, config_path):
@@ -124,6 +126,7 @@ class Tester:
         self.resolution_entryX = ntinst.getTable("ML").getEntry("resolutionX")
         self.resolution_entryY = ntinst.getTable("ML").getEntry("resolutionY")
         self.temp_entry = []
+        self.temp_detectedBalls = []
 
         print("Starting camera server")
         cs = CameraServer.getInstance()
@@ -168,24 +171,6 @@ class Tester:
             foundBalls = 0
             # output
             boxes, class_ids, scores, x_scale, y_scale = self.get_output(scale)
-            # for i in range(len(boxes)):
-                
-            #     if scores[i] > .5:
-            #         foundBalls += 1
-            #         #print("score: "+str(scores[i]))
-            #         #print("found it")
-            #         class_id = class_ids[i]
-            #         #print("get 1")
-            #         if np.isnan(class_id):
-            #             continue
-
-            #         class_id = int(class_id)
-            #         #print("get 2")
-            #         if class_id not in range(len(self.labels)):
-            #             continue
-            #         #print("getting here")
-            #         frame_cv2 = self.label_frame(frame_cv2, self.labels[class_id], boxes[i], scores[i], x_scale,
-            #                                      y_scale)
 
             for i in range(len(boxes)):
                 if scores[i] > 0.5:
@@ -242,6 +227,18 @@ class Tester:
             cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)
             self.entry.setString(json.dumps(self.temp_entry))
+
+            closestBall = self.temp_detectedBalls.sort(key=sortFunc)[0]
+
+            self.entry_targetX.setNumber(closestBall.x)
+            self.entry_targetY.setNumber(closestBall.y)
+            self.entry_targetArea.setNumber(closestBall.area)
+            print("x: "+str(closestBall.x)+" y: "+str(closestBall.y)+ " area:"+str(closestBall.area))
+
+            #choose closest ball
+
+
+            print("x: "+str(closestBall.x)+" y: "+str(closestBall.y) + " area:"+str(closestBall.area))
             
             #print("y: "+json.dumps(self.temp_entry[0].box.ymin))
             
@@ -252,6 +249,8 @@ class Tester:
             if self.frames % 10 == 0:
                 self.fps_entry.setNumber((1 / (time() - start)))
             self.frames += 1
+
+    
 
     def label_frame(self, frame, object_name, box, score, x_scale, y_scale):
         #print("box x:"+str(x_scale)+" y:"+str(y_scale))
@@ -275,16 +274,22 @@ class Tester:
         ymin, xmin, ymax, xmax = int(bbox.ymin), int(bbox.xmin), int(bbox.ymax), int(bbox.xmax)
         self.temp_entry.append({"label": object_name, "box": {"ymin": ymin, "xmin": xmin, "ymax": ymax, "xmax": xmax},
                                 "confidence": score})
+        #add items
+        #     cars = [
+#   {'car': 'Ford', 'year': 2005},
+#   {'car': 'Mitsubishi', 'year': 2000},
+#   {'car': 'BMW', 'year': 2019},
+#   {'car': 'VW', 'year': 2011}
+# ]
+        
         #print("entry: "+str(self.temp_entry))
 
         theX = ((xmax-xmin)/2)+xmin
         theY = ((ymax-ymin)/2)+ymin
         theArea = (((xmax-xmin)*(ymax-ymin)))
+        self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea});
 
-        self.entry_targetX.setNumber(theX)
-        self.entry_targetY.setNumber(theY)
-        self.entry_targetArea.setNumber(theArea)
-        print("x: "+str(theX)+" y: "+str(theY)+ " width: " + str(xmax-xmin) + " length: " + str(ymax-ymin) + " area:"+str(theArea))
+
 
 
 

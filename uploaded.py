@@ -122,7 +122,7 @@ class Tester:
         #self.resolution_entry = ntinst.getTable("ML").getEntry("resolution")
         self.resolution_entryX = ntinst.getTable("ML").getEntry("resolutionX")
         self.resolution_entryY = ntinst.getTable("ML").getEntry("resolutionY")
-        #self.temp_entry = []
+        self.feed = ntinst.getTable("ML").getEntry("feed")
         self.temp_detectedBalls = []
 
         print("Starting camera server")
@@ -137,9 +137,9 @@ class Tester:
         self.frames = 0
 
         self.coral_entry.setString(self.hardware_type)
-        #self.resolution_entry.setString(str(WIDTH) + ", " + str(HEIGHT))
         self.resolution_entryX.setNumber(WIDTH)
         self.resolution_entryY.setNumber(HEIGHT)
+        self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -152,7 +152,6 @@ class Tester:
         
 
         while True:
-            #print("checking")
             start = time()
             # Acquire frame and resize to expected shape [1xHxWx3]
             ret, frame_cv2 = self.cvSink.grabFrame(self.img)
@@ -199,6 +198,7 @@ class Tester:
                     redtolerance = [50, 50, 50]
                     blue = [120, 80, 40]
                     bluetolerance = [30, 30, 30]
+                    white = [0,0,0]
 
                     cropped = frame_cv2[ymin:ymax, xmin: xmax]
                     averages = np.average(cropped, axis=(0, 1))
@@ -221,24 +221,20 @@ class Tester:
                         #frame_cv2 = self.label_frame(frame_cv2, "Unknown: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                         pass
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            self.output.putFrame(frame_cv2)
-            #self.entry.setString(json.dumps(self.temp_entry))
-
             if len(self.temp_detectedBalls):
                 self.temp_detectedBalls.sort(reverse=True, key=lambda e: e['area'])
 
                 self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                 self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
                 self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
-                cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 2)
-                print("x: "+str(self.temp_detectedBalls[0]['x'])+" y: "+str(self.temp_detectedBalls[0]['y'])+ " area:"+str(self.temp_detectedBalls[0]['area']))
-                
-                #print("y: "+json.dumps(self.temp_entry[0].box.ymin))
+                cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
+                frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
+
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []
-            
-            #self.temp_entry = []
+
             if self.frames % 100 == 0:
                 print("Completed", self.frames, "frames. FPS:", (1 / (time() - start)))
             if self.frames % 10 == 0:

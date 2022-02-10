@@ -269,24 +269,12 @@ class Tester:
         ymin, xmin, ymax, xmax = int(bbox.ymin), int(bbox.xmin), int(bbox.ymax), int(bbox.xmax)
         #self.temp_entry.append({"label": object_name, "box": {"ymin": ymin, "xmin": xmin, "ymax": ymax, "xmax": xmax},
         #                        "confidence": score})
-        #add items
-        #     cars = [
-#   {'car': 'Ford', 'year': 2005},
-#   {'car': 'Mitsubishi', 'year': 2000},
-#   {'car': 'BMW', 'year': 2019},
-#   {'car': 'VW', 'year': 2011}
-# ]
-        
-        #print("entry: "+str(self.temp_entry))
 
+        #add items
         theX = ((xmax-xmin)/2)+xmin
         theY = ((ymax-ymin)/2)+ymin
         theArea = (((xmax-xmin)*(ymax-ymin)))
         self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea,'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax});
-
-
-
-
 
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 4)
 

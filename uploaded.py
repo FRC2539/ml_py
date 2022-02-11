@@ -112,6 +112,7 @@ class Tester:
         ntinst = NetworkTablesInstance.getDefault()
         ntinst.startClientTeam(config_parser.team)
         ntinst.startDSClient()
+        self.entry_targetAcquired = ntinst.getTable("ML").getEntry("targetAcquired")
         self.entry = ntinst.getTable("ML").getEntry("detections")
         self.entry_targetX = ntinst.getTable("ML").getEntry("targetX")
         self.entry_targetY = ntinst.getTable("ML").getEntry("targetY")
@@ -140,6 +141,7 @@ class Tester:
         self.resolution_entryX.setNumber(WIDTH)
         self.resolution_entryY.setNumber(HEIGHT)
         self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
+        self.entry_targetAcquired.setBoolean(0)
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -223,12 +225,14 @@ class Tester:
 
             if len(self.temp_detectedBalls):
                 self.temp_detectedBalls.sort(reverse=True, key=lambda e: e['area'])
-
+                self.entry_targetAcquired.setBoolean(1)
                 self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                 self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
                 self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
                 cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
                 frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
+            else:
+                self.entry_targetAcquired.setBoolean(0)
 
             cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)

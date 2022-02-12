@@ -112,6 +112,7 @@ class Tester:
         ntinst = NetworkTablesInstance.getDefault()
         ntinst.startClientTeam(config_parser.team)
         ntinst.startDSClient()
+        self.entry_targetColor = ntinst.getTable("ML").getEntry("targetColor")
         self.entry_targetAcquired = ntinst.getTable("ML").getEntry("targetAcquired")
         self.entry = ntinst.getTable("ML").getEntry("detections")
         self.entry_targetX = ntinst.getTable("ML").getEntry("targetX")
@@ -142,6 +143,7 @@ class Tester:
         self.resolution_entryY.setNumber(HEIGHT)
         self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
         self.entry_targetAcquired.setBoolean(0)
+        #self.entry_targetColor.setString("None")
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -200,7 +202,7 @@ class Tester:
                     redtolerance = [50, 50, 50]
                     blue = [120, 80, 40]
                     bluetolerance = [30, 30, 30]
-                    white = [0,0,0]
+                    white = [255,0,0]
 
                     cropped = frame_cv2[ymin:ymax, xmin: xmax]
                     averages = np.average(cropped, axis=(0, 1))
@@ -222,9 +224,21 @@ class Tester:
                         #cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
                         #frame_cv2 = self.label_frame(frame_cv2, "Unknown: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                         pass
-
+            filterKey = ""
             if len(self.temp_detectedBalls):
+
+                filterKey = str(self.entry_targetColor.getString('Nope'))
+
                 self.temp_detectedBalls.sort(reverse=True, key=lambda e: e['area'])
+                if (filterKey == 'red' or filterKey == 'blue'):
+                    self.temp_detectedBalls = list(filter(lambda elem : elem['color'] == filterKey, self.temp_detectedBalls))
+                    print("have a filter: "+str(filterKey))
+                else:
+                    print("no filter"+str(filterKey))
+                    pass
+
+                #closestBall = self.temp_detectedBalls[0]
+
                 self.entry_targetAcquired.setBoolean(1)
                 self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                 self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
@@ -234,7 +248,7 @@ class Tester:
             else:
                 self.entry_targetAcquired.setBoolean(0)
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls)+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []

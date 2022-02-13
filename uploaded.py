@@ -143,7 +143,7 @@ class Tester:
         self.resolution_entryY.setNumber(HEIGHT)
         self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
         self.entry_targetAcquired.setBoolean(0)
-        #self.entry_targetColor.setString("None")
+        self.entry_targetColor.setString("Init_ML")
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -153,7 +153,6 @@ class Tester:
 
     def run(self):
         #print("Starting mainloop yo")
-        
 
         while True:
             start = time()
@@ -202,7 +201,7 @@ class Tester:
                     redtolerance = [50, 50, 50]
                     blue = [120, 80, 40]
                     bluetolerance = [30, 30, 30]
-                    white = [255,0,0]
+                    white = [200,0,100]
 
                     cropped = frame_cv2[ymin:ymax, xmin: xmax]
                     averages = np.average(cropped, axis=(0, 1))
@@ -224,27 +223,28 @@ class Tester:
                         #cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
                         #frame_cv2 = self.label_frame(frame_cv2, "Unknown: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                         pass
-            filterKey = ""
+            #filterKey = ""
+            filterKey = self.entry_targetColor.getString("Nones")
+            #print("have a filter: "+str(filterKey))
             if len(self.temp_detectedBalls):
-
-                filterKey = str(self.entry_targetColor.getString('Nope'))
 
                 self.temp_detectedBalls.sort(reverse=True, key=lambda e: e['area'])
                 if (filterKey == 'red' or filterKey == 'blue'):
                     self.temp_detectedBalls = list(filter(lambda elem : elem['color'] == filterKey, self.temp_detectedBalls))
-                    print("have a filter: "+str(filterKey))
+                    #print("have a filter: "+str(filterKey))
                 else:
-                    print("no filter"+str(filterKey))
+                    #print("no filter"+str(filterKey))
                     pass
 
                 #closestBall = self.temp_detectedBalls[0]
-
-                self.entry_targetAcquired.setBoolean(1)
-                self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
-                self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
-                self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
-                cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
-                frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
+                print("filtered: "+str(self.temp_detectedBalls))
+                if len(self.temp_detectedBalls):
+                    self.entry_targetAcquired.setBoolean(1)
+                    self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
+                    self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
+                    self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
+                    cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
+                    frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
             else:
                 self.entry_targetAcquired.setBoolean(0)
 
@@ -288,7 +288,7 @@ class Tester:
         theX = ((xmax-xmin)/2)+xmin
         theY = ((ymax-ymin)/2)+ymin
         theArea = (((xmax-xmin)*(ymax-ymin)))
-        self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea,'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax});
+        self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea,'color':object_name,'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax});
 
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 4)
 

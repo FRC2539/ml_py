@@ -167,7 +167,7 @@ class Tester:
 
             # run inference
             self.interpreter.invoke()
-            foundBalls = 0
+            #foundBalls = 0
             # output
             boxes, class_ids, scores, x_scale, y_scale = self.get_output(scale)
 
@@ -201,19 +201,19 @@ class Tester:
                     redtolerance = [50, 50, 50]
                     blue = [120, 80, 40]
                     bluetolerance = [30, 30, 30]
-                    white = [200,0,100]
+                    hilight = [0,0,10]
 
                     cropped = frame_cv2[ymin:ymax, xmin: xmax]
                     averages = np.average(cropped, axis=(0, 1))
 
                     if self.isWithinTolerance(red, averages, redtolerance):
-                        foundBalls += 1
+                        #foundBalls += 1
                         class_ids[i] = 0
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), red, 2)
                         frame_cv2 = self.label_frame(frame_cv2, "Red", boxes[i], scores[i], x_scale, y_scale)
                         #frame_cv2 = self.label_frame(frame_cv2, "Red: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                     elif self.isWithinTolerance(blue, averages, bluetolerance):
-                        foundBalls += 1
+                        #foundBalls += 1
                         class_ids[i] = 1
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), blue, 2)
                         frame_cv2 = self.label_frame(frame_cv2, "Blue", boxes[i], scores[i], x_scale, y_scale)
@@ -243,14 +243,14 @@ class Tester:
                     self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                     self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
                     self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
-                    cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
+                    cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), hilight, 6)
                     frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
                 else:
                     self.entry_targetAcquired.setBoolean(0)
             else:
                 self.entry_targetAcquired.setBoolean(0)
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found balls: "+str(foundBalls)+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.2, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []

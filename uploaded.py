@@ -245,6 +245,8 @@ class Tester:
                     self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
                     cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), white, 6)
                     frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
+                else:
+                    self.entry_targetAcquired.setBoolean(0)
             else:
                 self.entry_targetAcquired.setBoolean(0)
 

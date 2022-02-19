@@ -210,13 +210,13 @@ class Tester:
                         #foundBalls += 1
                         class_ids[i] = 0
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), red, 2)
-                        frame_cv2 = self.label_frame(frame_cv2, "Red", boxes[i], scores[i], x_scale, y_scale)
+                        frame_cv2 = self.label_frame(frame_cv2, "red", boxes[i], scores[i], x_scale, y_scale)
                         #frame_cv2 = self.label_frame(frame_cv2, "Red: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                     elif self.isWithinTolerance(blue, averages, bluetolerance):
                         #foundBalls += 1
                         class_ids[i] = 1
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), blue, 2)
-                        frame_cv2 = self.label_frame(frame_cv2, "Blue", boxes[i], scores[i], x_scale, y_scale)
+                        frame_cv2 = self.label_frame(frame_cv2, "blue", boxes[i], scores[i], x_scale, y_scale)
                         #frame_cv2 = self.label_frame(frame_cv2, "Blue: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                     else:
                         #class_ids[i] = 2
@@ -250,7 +250,7 @@ class Tester:
             else:
                 self.entry_targetAcquired.setBoolean(0)
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.2, (0, 0, 0), 2)
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []

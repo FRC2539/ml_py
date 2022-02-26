@@ -138,6 +138,7 @@ class Tester:
         ntinst = NetworkTablesInstance.getDefault()
         ntinst.startClientTeam(config_parser.team)
         ntinst.startDSClient()
+        
         self.entry_targetColor = ntinst.getTable("ML").getEntry("targetColor")
         self.entry_targetAcquired = ntinst.getTable("ML").getEntry("targetAcquired")
         self.entry = ntinst.getTable("ML").getEntry("detections")
@@ -145,6 +146,8 @@ class Tester:
         self.entry_targetY = ntinst.getTable("ML").getEntry("targetY")
         self.entry_targetArea = ntinst.getTable("ML").getEntry("targetArea")
 
+        self.calibrate = ntinst.getTable("ML").getEntry("calibrate")
+        self.calibrateFound = ntinst.getTable("ML").getEntry("calibrateFound")
         self.coral_entry = ntinst.getTable("ML").getEntry("coral")
         self.fps_entry = ntinst.getTable("ML").getEntry("fps")
         #self.resolution_entry = ntinst.getTable("ML").getEntry("resolution")
@@ -170,6 +173,9 @@ class Tester:
         self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
         self.entry_targetAcquired.setBoolean(0)
         self.entry_targetColor.setString("Init_ML")
+        #self.entry_targetColor.setString("red")
+        self.calibrate.setBoolean(0)
+        self.calibrateFound.setString("")
 
     def isWithinTolerance(self, arr1, arr2, tolerance):
         for i in range(len(arr1)):
@@ -223,11 +229,15 @@ class Tester:
                         print(xmin, xmax, ymin, ymax)
                         continue
 
-                    red = [20, 20, 150]
+                    #[ 30.55803571  46.90922619 200.59970238][ 40.93589744 229.6474359  251.3974359 ]
+                    #[172.40277778 126.6558642   59.11419753]
+
+                    red = [20, 35, 190]
                     redtolerance = [50, 50, 50]
-                    blue = [120, 80, 40]
-                    bluetolerance = [30, 30, 30]
-                    hilight = [0,0,10]
+                    blue = [150, 115, 49]
+                    bluetolerance = [50, 50, 50]
+                    hilight = [15, 55, 255] #[0, 255, 255] yellow
+                    text = [15, 55, 255]
 
                     cropped = frame_cv2[ymin:ymax, xmin: xmax]
                     averages = np.average(cropped, axis=(0, 1))
@@ -236,20 +246,27 @@ class Tester:
                         #foundBalls += 1
                         class_ids[i] = 0
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), red, 2)
-                        frame_cv2 = self.label_frame(frame_cv2, "red", boxes[i], scores[i], x_scale, y_scale)
+                        frame_cv2 = self.label_frame(frame_cv2, "red", boxes[i], scores[i], x_scale, y_scale, averages)
                         #frame_cv2 = self.label_frame(frame_cv2, "Red: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                     elif self.isWithinTolerance(blue, averages, bluetolerance):
                         #foundBalls += 1
                         class_ids[i] = 1
                         cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), blue, 2)
-                        frame_cv2 = self.label_frame(frame_cv2, "blue", boxes[i], scores[i], x_scale, y_scale)
+                        frame_cv2 = self.label_frame(frame_cv2, "blue", boxes[i], scores[i], x_scale, y_scale, averages)
                         #frame_cv2 = self.label_frame(frame_cv2, "Blue: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
                     else:
-                        #class_ids[i] = 2
-                        #cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-                        #frame_cv2 = self.label_frame(frame_cv2, "Unknown: "+str(averages), boxes[i], scores[i], x_scale, y_scale)
+                        if self.calibrate.getBoolean(0) == 1:
+                            class_ids[i] = 2
+                            cv2.rectangle(frame_cv2, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+                            frame_cv2 = self.label_frame(frame_cv2, str("not red or blue"), boxes[i], scores[i], x_scale, y_scale, averages)
+                            print("not red or blue: "+str(averages))
                         pass
+            
+            if self.calibrate.getBoolean(0) == 1:
+                self.calibrateFound.setString(str(self.temp_detectedBalls))
+            
             #filterKey = ""
+
             filterKey = self.entry_targetColor.getString("Nones")
             #print("have a filter: "+str(filterKey))
             if len(self.temp_detectedBalls):
@@ -263,20 +280,21 @@ class Tester:
                     pass
 
                 #closestBall = self.temp_detectedBalls[0]
-                print("filtered: "+str(self.temp_detectedBalls))
+                #print("filtered: "+str(self.temp_detectedBalls))
                 if len(self.temp_detectedBalls):
                     self.entry_targetAcquired.setBoolean(1)
                     self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                     self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
                     self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
                     cv2.rectangle(frame_cv2, (self.temp_detectedBalls[0]['xmin'], self.temp_detectedBalls[0]['ymin']), (self.temp_detectedBalls[0]['xmax'], self.temp_detectedBalls[0]['ymax']), hilight, 6)
-                    frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale)
+                    frame_cv2 = self.label_frame(frame_cv2, "Target", boxes[i], scores[i], x_scale, y_scale, averages)
                 else:
                     self.entry_targetAcquired.setBoolean(0)
             else:
                 self.entry_targetAcquired.setBoolean(0)
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 2)
+
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, text, 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []
@@ -289,7 +307,7 @@ class Tester:
 
     
 
-    def label_frame(self, frame, object_name, box, score, x_scale, y_scale):
+    def label_frame(self, frame, object_name, box, score, x_scale, y_scale, averages):
         #print("box x:"+str(x_scale)+" y:"+str(y_scale))
         ymin, xmin, ymax, xmax = box
         score = float(score)
@@ -316,7 +334,7 @@ class Tester:
         theX = ((xmax-xmin)/2)+xmin
         theY = ((ymax-ymin)/2)+ymin
         theArea = (((xmax-xmin)*(ymax-ymin)))
-        self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea,'color':object_name,'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax});
+        self.temp_detectedBalls.append({'x':theX, 'y':theY,'area':theArea,'color':object_name,'xmin':xmin,'xmax':xmax,'ymin':ymin,'ymax':ymax, 'averages':averages});
 
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 4)
 

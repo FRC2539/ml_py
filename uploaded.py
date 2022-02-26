@@ -19,6 +19,7 @@ class ConfigParser:
         try:
             with open(config_path, "rt", encoding="utf-8") as f:
                 j = json.load(f)
+                print(str(j))
         except OSError as err:
             print("could not open '{}': {}".format(config_path, err), file=sys.stderr)
 
@@ -31,6 +32,31 @@ class ConfigParser:
             self.team = j["team"]
         except KeyError:
             self.parseError("could not read team number", config_path)
+        
+        # red
+        try:
+            self.red = j["red"]
+        except KeyError:
+            self.parseError("could not read red", config_path)    
+
+        # redtolerance
+        try:
+            self.redtolerance = j["redtolerance"]
+        except KeyError:
+            self.parseError("could not read red tolerance", config_path)    
+
+
+        # blue
+        try:
+            self.red = j["blue"]
+        except KeyError:
+            self.parseError("could not read blue", config_path)   
+        
+        # bluetolerance
+        try:
+            self.redtolerance = j["bluetolerance"]
+        except KeyError:
+            self.parseError("could not read blue tolerance", config_path)  
 
         # cameras
         try:

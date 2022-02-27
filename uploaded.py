@@ -296,7 +296,7 @@ class Tester:
                 self.entry_targetAcquired.setBoolean(0)
 
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, text, 2)
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, [15, 55, 255], 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []

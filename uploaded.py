@@ -154,6 +154,7 @@ class Tester:
         self.resolution_entryX = ntinst.getTable("ML").getEntry("resolutionX")
         self.resolution_entryY = ntinst.getTable("ML").getEntry("resolutionY")
         self.feed = ntinst.getTable("ML").getEntry("feed")
+        self.mldisable = ntinst.getTable("ML").getEntry("mldisable")
         self.temp_detectedBalls = []
 
         print("Starting camera server")
@@ -184,9 +185,10 @@ class Tester:
         return True
 
     def run(self):
-        #print("Starting mainloop yo")
+        print("mldisable: "+str(self.mldisable))
 
-        while True:
+        
+        while True and self.mldisable != "true":
             start = time()
             # Acquire frame and resize to expected shape [1xHxWx3]
             ret, frame_cv2 = self.cvSink.grabFrame(self.img)

@@ -139,12 +139,13 @@ class Tester:
         ntinst.startClientTeam(config_parser.team)
         ntinst.startDSClient()
         
-        self.entry_targetColor = ntinst.getTable("ML").getEntry("targetColor")
+        self.entry_filterColor = ntinst.getTable("ML").getEntry("filterColor")
         self.entry_targetAcquired = ntinst.getTable("ML").getEntry("targetAcquired")
         self.entry = ntinst.getTable("ML").getEntry("detections")
         self.entry_targetX = ntinst.getTable("ML").getEntry("targetX")
         self.entry_targetY = ntinst.getTable("ML").getEntry("targetY")
         self.entry_targetArea = ntinst.getTable("ML").getEntry("targetArea")
+        self.entry_targetColor = ntinst.getTable("ML").getEntry("targetColor")
 
         self.calibrate = ntinst.getTable("ML").getEntry("calibrate")
         self.calibrateFound = ntinst.getTable("ML").getEntry("calibrateFound")
@@ -173,7 +174,7 @@ class Tester:
         self.resolution_entryY.setNumber(HEIGHT)
         self.feed.setString("http://wpilibpi.local:1182/stream.mjpg")
         self.entry_targetAcquired.setBoolean(0)
-        self.entry_targetColor.setString("Init_ML")
+        self.entry_filterColor.setString("Init_ML")
         #self.entry_targetColor.setString("red")
         self.calibrate.setBoolean(0)
         self.calibrateFound.setString("")
@@ -269,7 +270,7 @@ class Tester:
             
             #filterKey = ""
 
-            filterKey = self.entry_targetColor.getString("Nones")
+            filterKey = self.entry_filterColor.getString("None")
             #print("have a filter: "+str(filterKey))
             if len(self.temp_detectedBalls):
 
@@ -285,6 +286,7 @@ class Tester:
                 #print("filtered: "+str(self.temp_detectedBalls))
                 if len(self.temp_detectedBalls):
                     self.entry_targetAcquired.setBoolean(1)
+                    self.entry_targetColor.setString(self.temp_detectedBalls[0]['color'])
                     self.entry_targetX.setNumber(self.temp_detectedBalls[0]['x'])
                     self.entry_targetY.setNumber(self.temp_detectedBalls[0]['y'])
                     self.entry_targetArea.setNumber(self.temp_detectedBalls[0]['area'])
@@ -296,7 +298,7 @@ class Tester:
                 self.entry_targetAcquired.setBoolean(0)
 
 
-            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, text, 2)
+            cv2.putText(frame_cv2, "fps: " + str(round(1 / (time() - start))) + " found: "+str(len(self.temp_detectedBalls))+" filter:"+str(filterKey), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, [15, 55, 255], 2)
             self.output.putFrame(frame_cv2)
             
             self.temp_detectedBalls = []

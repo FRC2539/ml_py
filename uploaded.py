@@ -189,7 +189,7 @@ class Tester:
         print("mldisable: "+str(self.mldisable))
 
         
-        while True and self.mldisable != "true":
+        while True and str(self.mldisable) !== "true":
             start = time()
             # Acquire frame and resize to expected shape [1xHxWx3]
             ret, frame_cv2 = self.cvSink.grabFrame(self.img)
